@@ -1,6 +1,7 @@
+
 # The 3 Biggest Challenges in Fine-Tuning Large Language Models (LLMs) in 2025
 
-**#A Frontend Developer’s Perspective**
+**#A Frontend Developer’s Perspective**  
 
 **Submitted by:** TaanVeer  
 **University:** Hajee Mohammad Danesh Science & Technology University, Dinajpur, Bangladesh  
@@ -22,7 +23,8 @@
 
 ---
 
-## Abstract
+<details>
+<summary>Abstract</summary>
 
 This paper examines the three primary challenges frontend developers face when fine-tuning Large Language Models (LLMs) in 2025: the **data quality paradox**, the **cost-performance tightrope**, and the **black box problem**.
 
@@ -30,17 +32,19 @@ Findings indicate that teams should first attempt **prompt engineering** and **R
 
 This edition adds practical code examples, observability guidance, safety/bias mitigation patterns, and cross-disciplinary collaboration strategies.
 
----
+</details>
 
-## 1. Introduction
+<details>
+<summary>Introduction</summary>
 
 The adoption of LLMs within production web systems has shifted from experimental to foundational. In 2025, frontend developers are not just UI implementers; they are active participants in applying machine learning to real user experiences.
 
 This convergence requires new workflows that bridge frontend engineering, MLOps, backend systems, and data science. Effective LLM integration depends on shared responsibility, transparent tooling, and iterative collaboration across teams.
 
----
+</details>
 
-## Executive Summary
+<details>
+<summary>Executive Summary</summary>
 
 | Challenge                  | Core Problem                                           | Frontend Role                                                    | Suggested Solution                                                     |
 | -------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -48,9 +52,10 @@ This convergence requires new workflows that bridge frontend engineering, MLOps,
 | Cost-Performance Tightrope | High compute and serving costs versus latency/UX needs | Monitor and visualize costs; implement caching strategies        | Cost dashboards, caching RAG results, distillation choices             |
 | Black Box Problem          | Opaque model reasoning complicates debugging and trust | Log interactions, enable model comparisons, present explanations | Observability stacks, model comparison UIs, explainability tools       |
 
----
+</details>
 
-## Challenge 1: Data Quality Paradox
+<details>
+<summary>Challenge 1: Data Quality Paradox</summary>
 
 ### The core issue
 
@@ -58,16 +63,16 @@ Fine-tuning requires high-quality, domain-appropriate data. Frontend engineers t
 
 ### Key considerations
 
-- **Bias and representation:** Linguistic, demographic, and topical skews can degrade UX and fairness.
-- **Data provenance:** Lack of traceability for training examples complicates remediation.
+- **Bias and representation:** Linguistic, demographic, and topical skews can degrade UX and fairness.  
+- **Data provenance:** Lack of traceability for training examples complicates remediation.  
 - **Human oversight:** Human review remains necessary for sensitive domains.
 
 ### Practical solution: Data validation interfaces
 
-Build intuitive UIs that allow teams to review, flag, and batch-correct examples. Such tools accelerate detection of anomalies and facilitate human-in-the-loop workflows prior to fine-tuning.
+Build intuitive UIs that allow teams to review, flag, and batch-correct examples.
 
 <details>
-<summary>React Code Example: DataValidator</summary>
+<summary>React Code Example: DataValidator (Click to expand)</summary>
 
 ```jsx
 function DataValidator({ examples, onFlag }) {
@@ -96,17 +101,26 @@ function DataValidator({ examples, onFlag }) {
     </div>
   );
 }
+```
+
 </details>
-Challenge 2: Cost-Performance Tightrope
-The core issue
+</details>
+
+<details>
+<summary>Challenge 2: Cost-Performance Tightrope</summary>
+
+### The core issue
+
 Serving and fine-tuning LLMs is expensive. Frontend decisions (e.g., model choice or RAG frequency) directly affect operating costs and user experience.
 
-Best practice: Cost observability
-Implement dashboards that surface monthly/daily spend, cost per endpoint, and usage trends — enabling product teams to make budget-aware tradeoffs.
+### Best practice: Cost observability
 
-<details> <summary>React Code Example: CostDashboard (partial)</summary>
-jsx
-Copy code
+Implement dashboards that surface monthly/daily spend, cost per endpoint, and usage trends.
+
+<details>
+<summary>React Code Example: CostDashboard (partial)</summary>
+
+```jsx
 import { useEffect, useState } from 'react';
 
 function CostDashboard() {
@@ -133,17 +147,22 @@ function CostDashboard() {
     return () => clearInterval(interval);
   }, []);
 }
+```
+
 </details>
-Challenge 3: The Black Box Problem
-The core issue
-LLM behavior is frequently opaque; understanding root causes for a specific output requires careful logging, correlation, and sometimes specialized explainability tools.
+</details>
 
-Observability & logging strategy
-Log prompts, outputs, relevant metadata (model id/version, tokens, user/session context), and any intermediate retrievals (for RAG). Use correlation IDs and integrate with observability platforms (e.g., OpenTelemetry, Grafana).
+<details>
+<summary>Challenge 3: The Black Box Problem</summary>
 
-<details> <summary>React Hook: useLLMLogger</summary>
-jsx
-Copy code
+### Observability & logging strategy
+
+Log prompts, outputs, metadata, and intermediate retrievals for RAG.
+
+<details>
+<summary>React Hook: useLLMLogger</summary>
+
+```jsx
 import { useCallback, useContext } from 'react';
 import { UserContext } from './UserContext';
 
@@ -172,9 +191,14 @@ function useLLMLogger() {
 
   return logLLMInteraction;
 }
-</details> <details> <summary>React Component: ModelComparison</summary>
-jsx
-Copy code
+```
+
+</details>
+
+<details>
+<summary>React Component: ModelComparison</summary>
+
+```jsx
 function ModelComparison({ input, models, onSelect }) {
   const [outputs, setOutputs] = useState({});
   const [loading, setLoading] = useState({});
@@ -203,9 +227,14 @@ function ModelComparison({ input, models, onSelect }) {
     if (input && input.length > 5) generateOutputs();
   }, [input, generateOutputs]);
 }
-</details> <details> <summary>React Component: EditableOutput</summary>
-jsx
-Copy code
+```
+
+</details>
+
+<details>
+<summary>React Component: EditableOutput</summary>
+
+```jsx
 function EditableOutput({ value, onChange, onReport }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedValue, setEditedValue] = useState(value);
@@ -247,30 +276,41 @@ function EditableOutput({ value, onChange, onReport }) {
     </div>
   );
 }
-</details>
-Safety & Bias Handling
-Implement review UIs for flagged outputs.
-
-Enable users to report unsafe or biased responses.
-
-Use human-in-the-loop fine-tuning for high-risk domains.
-
-Teamwork & MLOps Integration
-Encourage cross-disciplinary code reviews with ML and frontend teams.
-
-Maintain dataset provenance and model versioning.
-
-Use observability dashboards to track cost, UX metrics, and model behavior.
-
-Conclusion
-Frontend developers now operate at the intersection of ML and UX. By proactively managing data quality, cost-performance tradeoffs, and the black box problem, teams can safely integrate LLMs into production systems.
-
-References
-OpenAI Fine-Tuning Guides, 2025.
-
-RAG for Production Systems, MLDev Conference, 2024.
-
-Human-in-the-Loop Workflows in LLMs, Journal of AI, 2023.
-
----
 ```
+
+</details>
+</details>
+
+<details>
+<summary>Safety & Bias Handling</summary>
+
+- Implement review UIs for flagged outputs.  
+- Enable users to report unsafe or biased responses.  
+- Use human-in-the-loop fine-tuning for high-risk domains.  
+
+</details>
+
+<details>
+<summary>Teamwork & MLOps Integration</summary>
+
+- Encourage cross-disciplinary code reviews with ML and frontend teams.  
+- Maintain dataset provenance and model versioning.  
+- Use observability dashboards to track cost, UX metrics, and model behavior.  
+
+</details>
+
+<details>
+<summary>Conclusion</summary>
+
+Frontend developers now operate at the intersection of ML and UX. By proactively managing **data quality, cost-performance tradeoffs, and the black box problem**, teams can safely integrate LLMs into production systems.
+
+</details>
+
+<details>
+<summary>References</summary>
+
+1. OpenAI Fine-Tuning Guides, 2025.  
+2. RAG for Production Systems, MLDev Conference, 2024.  
+3. Human-in-the-Loop Workflows in LLMs, Journal of AI, 2023.  
+
+</details>
