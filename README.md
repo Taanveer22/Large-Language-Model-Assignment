@@ -1,4 +1,5 @@
 # The 3 Biggest Challenges in Fine-Tuning Large Language Models (LLMs) in 2025
+
 **#A Frontend Developer’s Perspective**
 
 **Submitted by:** TaanVeer  
@@ -8,40 +9,268 @@
 ---
 
 ## Table of Contents
+
 - [Abstract](#abstract)
 - [Introduction](#introduction)
 - [Challenge 1: Data Quality Paradox](#challenge-1-data-quality-paradox)
 - [Challenge 2: Cost-Performance Tightrope](#challenge-2-cost-performance-tightrope)
 - [Challenge 3: The Black Box Problem](#challenge-3-the-black-box-problem)
 - [Safety & Bias Handling](#safety--bias-handling)
-- [Teamwork & MLOps](#teamwork--mlops-integration)
+- [Teamwork & MLOps Integration](#teamwork--mlops-integration)
 - [Conclusion](#conclusion)
 - [References](#references)
 
 ---
 
 ## Abstract
-This paper examines the three primary challenges frontend developers face when fine-tuning Large Language Models (LLMs) in 2025: the **data quality paradox**, the **cost-performance tightrope**, and the **black box problem**. As LLMs become increasingly central to web applications, frontend developers must reconcile usability, transparency, and performance while collaborating closely with ML, backend, and operations teams.
 
-Findings indicate that teams should first attempt **prompt engineering** and **Retrieval-Augmented Generation (RAG)** before investing in fine-tuning. When fine-tuning is warranted, a methodical approach with proper tooling — including validation UIs, observability, and human-in-the-loop workflows — substantially reduces risk and cost. This edition adds practical code examples, observability guidance, safety/bias mitigation patterns, and cross-disciplinary collaboration strategies.
+This paper examines the three primary challenges frontend developers face when fine-tuning Large Language Models (LLMs) in 2025: the **data quality paradox**, the **cost-performance tightrope**, and the **black box problem**.
+
+Findings indicate that teams should first attempt **prompt engineering** and **Retrieval-Augmented Generation (RAG)** before investing in fine-tuning. When fine-tuning is warranted, a methodical approach with proper tooling — including validation UIs, observability, and human-in-the-loop workflows — substantially reduces risk and cost.
+
+This edition adds practical code examples, observability guidance, safety/bias mitigation patterns, and cross-disciplinary collaboration strategies.
 
 ---
 
 ## 1. Introduction
+
 The adoption of LLMs within production web systems has shifted from experimental to foundational. In 2025, frontend developers are not just UI implementers; they are active participants in applying machine learning to real user experiences.
 
 This convergence requires new workflows that bridge frontend engineering, MLOps, backend systems, and data science. Effective LLM integration depends on shared responsibility, transparent tooling, and iterative collaboration across teams.
-
-This paper analyzes the three most pressing challenges for frontend teams involved in LLM fine-tuning and proposes practical solutions supported by code examples and best practices.
 
 ---
 
 ## Executive Summary
 
-| Challenge | Core Problem | Frontend Role | Suggested Solution |
-|----------|-------------|---------------|------------------|
-| Data Quality Paradox | Biased, inconsistent, or poorly labeled training data | Surface & validate dataset examples; implement UI safeguards | Data validator UIs, human-in-the-loop review, dataset provenance tools |
-| Cost-Performance Tightrope | High compute and serving costs versus latency/UX needs | Monitor and visualize costs; implement caching strategies | Cost dashboards, caching RAG results, distillation choices |
-| Black Box Problem | Opaque model reasoning complicates debugging and trust | Log interactions, enable model comparisons, present explanations | Observability stacks, model comparison UIs, explainability tools |
+| Challenge                  | Core Problem                                           | Frontend Role                                                    | Suggested Solution                                                     |
+| -------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Data Quality Paradox       | Biased, inconsistent, or poorly labeled training data  | Surface & validate dataset examples; implement UI safeguards     | Data validator UIs, human-in-the-loop review, dataset provenance tools |
+| Cost-Performance Tightrope | High compute and serving costs versus latency/UX needs | Monitor and visualize costs; implement caching strategies        | Cost dashboards, caching RAG results, distillation choices             |
+| Black Box Problem          | Opaque model reasoning complicates debugging and trust | Log interactions, enable model comparisons, present explanations | Observability stacks, model comparison UIs, explainability tools       |
 
 ---
+
+## Challenge 1: Data Quality Paradox
+
+### The core issue
+
+Fine-tuning requires high-quality, domain-appropriate data. Frontend engineers typically do not own dataset creation yet must manage how outputs appear to users — creating an accountability gap when model outputs are biased or inconsistent.
+
+### Key considerations
+
+- **Bias and representation:** Linguistic, demographic, and topical skews can degrade UX and fairness.
+- **Data provenance:** Lack of traceability for training examples complicates remediation.
+- **Human oversight:** Human review remains necessary for sensitive domains.
+
+### Practical solution: Data validation interfaces
+
+Build intuitive UIs that allow teams to review, flag, and batch-correct examples. Such tools accelerate detection of anomalies and facilitate human-in-the-loop workflows prior to fine-tuning.
+
+<details>
+<summary>React Code Example: DataValidator</summary>
+
+```jsx
+function DataValidator({ examples, onFlag }) {
+  const [flagged, setFlagged] = useState(new Set());
+
+  const flagAsOutlier = (index) => {
+    const newSet = new Set(flagged);
+    newSet.add(index);
+    setFlagged(newSet);
+    onFlag && onFlag(index);
+  };
+
+  return (
+    <div className="data-validator">
+      {examples.map((ex, i) => (
+        <div key={i} className={`example-card ${flagged.has(i) ? 'flagged' : ''}`}>
+          <div className="example-header">
+            <span>Example #{i + 1}</span>
+            <button onClick={() => flagAsOutlier(i)} className="flag-btn">
+              {flagged.has(i) ? '✓ Flagged' : 'Flag Outlier'}
+            </button>
+          </div>
+          <pre className="example-content">{JSON.stringify(ex, null, 2)}</pre>
+        </div>
+      ))}
+    </div>
+  );
+}
+</details>
+Challenge 2: Cost-Performance Tightrope
+The core issue
+Serving and fine-tuning LLMs is expensive. Frontend decisions (e.g., model choice or RAG frequency) directly affect operating costs and user experience.
+
+Best practice: Cost observability
+Implement dashboards that surface monthly/daily spend, cost per endpoint, and usage trends — enabling product teams to make budget-aware tradeoffs.
+
+<details> <summary>React Code Example: CostDashboard (partial)</summary>
+jsx
+Copy code
+import { useEffect, useState } from 'react';
+
+function CostDashboard() {
+  const [costData, setCostData] = useState({ monthly: 0, daily: 0, byEndpoint: {} });
+  const [trend, setTrend] = useState('stable');
+
+  useEffect(() => {
+    const fetchCostData = async () => {
+      try {
+        const response = await fetch('/api/llm/cost');
+        const data = await response.json();
+        setCostData(data);
+
+        if (data.monthly > (data.lastMonth ?? 0) * 1.2) setTrend('increasing');
+        else if (data.monthly < (data.lastMonth ?? 0) * 0.8) setTrend('decreasing');
+        else setTrend('stable');
+      } catch (error) {
+        console.error('Failed to fetch cost data:', error);
+      }
+    };
+
+    fetchCostData();
+    const interval = setInterval(fetchCostData, 300000);
+    return () => clearInterval(interval);
+  }, []);
+}
+</details>
+Challenge 3: The Black Box Problem
+The core issue
+LLM behavior is frequently opaque; understanding root causes for a specific output requires careful logging, correlation, and sometimes specialized explainability tools.
+
+Observability & logging strategy
+Log prompts, outputs, relevant metadata (model id/version, tokens, user/session context), and any intermediate retrievals (for RAG). Use correlation IDs and integrate with observability platforms (e.g., OpenTelemetry, Grafana).
+
+<details> <summary>React Hook: useLLMLogger</summary>
+jsx
+Copy code
+import { useCallback, useContext } from 'react';
+import { UserContext } from './UserContext';
+
+function useLLMLogger() {
+  const user = useContext(UserContext);
+
+  const logLLMInteraction = useCallback(async (prompt, output, metadata = {}) => {
+    const logEntry = {
+      prompt,
+      output,
+      timestamp: new Date().toISOString(),
+      user: user?.id || 'anonymous',
+      ...metadata
+    };
+
+    try {
+      await fetch('/api/log/llm-interaction', {
+        method: 'POST',
+        body: JSON.stringify(logEntry),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Failed to log LLM interaction:', error);
+    }
+  }, [user]);
+
+  return logLLMInteraction;
+}
+</details> <details> <summary>React Component: ModelComparison</summary>
+jsx
+Copy code
+function ModelComparison({ input, models, onSelect }) {
+  const [outputs, setOutputs] = useState({});
+  const [loading, setLoading] = useState({});
+
+  const generateOutputs = useCallback(async () => {
+    const newOutputs = {};
+    for (const model of models) {
+      setLoading(prev => ({ ...prev, [model.id]: true }));
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: input, model: model.id, version: model.version })
+        });
+        const data = await res.json();
+        newOutputs[model.id] = data.output;
+      } catch (err) {
+        newOutputs[model.id] = `Error: ${err.message}`;
+      } finally {
+        setLoading(prev => ({ ...prev, [model.id]: false }));
+      }
+      setOutputs(prev => ({ ...prev, ...newOutputs }));
+    }
+  }, [input, models]);
+
+  useEffect(() => {
+    if (input && input.length > 5) generateOutputs();
+  }, [input, generateOutputs]);
+}
+</details> <details> <summary>React Component: EditableOutput</summary>
+jsx
+Copy code
+function EditableOutput({ value, onChange, onReport }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedValue, setEditedValue] = useState(value);
+
+  const handleSave = () => {
+    onChange && onChange(editedValue);
+    setIsEditing(false);
+  };
+
+  const handleReportBias = () => {
+    onReport && onReport({
+      original: value,
+      edited: editedValue,
+      reason: 'bias',
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  return (
+    <div className="editable-output">
+      <div className="output-banner">⚠️ AI-generated content — review before use.</div>
+      {isEditing ? (
+        <div className="editing-mode">
+          <textarea value={editedValue} onChange={(e) => setEditedValue(e.target.value)} rows="4" />
+          <div className="editor-actions">
+            <button onClick={handleSave} className="btn">Save Changes</button>
+            <button onClick={() => setIsEditing(false)} className="btn" style={{background:'#64748b'}}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <div className="view-mode">
+          <div className="output-content">{value}</div>
+          <div className="output-actions">
+            <button onClick={() => setIsEditing(true)} className="btn">Edit Output</button>
+            <button onClick={handleReportBias} className="btn" style={{background:'var(--danger)'}}>Report Bias/Error</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+</details>
+Safety & Bias Handling
+Implement review UIs for flagged outputs.
+
+Enable users to report unsafe or biased responses.
+
+Use human-in-the-loop fine-tuning for high-risk domains.
+
+Teamwork & MLOps Integration
+Encourage cross-disciplinary code reviews with ML and frontend teams.
+
+Maintain dataset provenance and model versioning.
+
+Use observability dashboards to track cost, UX metrics, and model behavior.
+
+Conclusion
+Frontend developers now operate at the intersection of ML and UX. By proactively managing data quality, cost-performance tradeoffs, and the black box problem, teams can safely integrate LLMs into production systems.
+
+References
+OpenAI Fine-Tuning Guides, 2025.
+
+RAG for Production Systems, MLDev Conference, 2024.
+
+Human-in-the-Loop Workflows in LLMs, Journal of AI, 2023.
+
+---
+```
